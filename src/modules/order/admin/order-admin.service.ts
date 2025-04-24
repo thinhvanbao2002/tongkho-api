@@ -18,23 +18,35 @@ import * as moment from "moment";
 
 @Injectable()
 export class OrderAdminService {
+	private readonly EXCEL_FILE_PATH = 'uploads/excels';
+	private readonly DEFAULT_INCLUDE = [
+		{ 
+			model: OrderDetailModel, 
+			include: [{ model: ProductModel }] 
+		},
+		{ 
+			model: UserModel, 
+			attributes: ["name", "phone", "email", "role"] 
+		}
+	];
+
 	constructor(
 		@InjectModel(OrderModel) private readonly orderRp: typeof OrderModel,
 		@InjectModel(OrderDetailModel) private readonly orderDetailRp: typeof OrderDetailModel,
 	) {}
 
-	async findAll(dto: SearchOrderAdminDto) {
+	private buildSearchWhereConditions(dto: SearchOrderAdminDto): WhereOptions {
 		const { q, order_status, from_date, to_date } = dto;
-		const dateConditions = [];
 		const whereOptions: WhereOptions = {};
+		const dateConditions = [];
 
 		if (q) {
 			whereOptions.id = {
 				[Op.in]: [
 					Sequelize.literal(
 						`select o.id from \`order\` as o
-            join user on o.customer_id = user.id
-            where user.name like '%${q}%'`,
+						join user on o.customer_id = user.id
+						where user.name like '%${q}%'`
 					),
 				],
 			};
@@ -45,123 +57,110 @@ export class OrderAdminService {
 		}
 
 		if (from_date) {
-			dateConditions.push({ [Op.gte]: moment(from_date).startOf("date").toDate() });
+			dateConditions.push({ 
+				[Op.gte]: moment(from_date).startOf("date").toDate() 
+			});
 		}
+		
 		if (to_date) {
-			dateConditions.push({ [Op.lte]: moment(to_date).endOf("date").toDate() });
+			dateConditions.push({ 
+				[Op.lte]: moment(to_date).endOf("date").toDate() 
+			});
 		}
 
 		if (dateConditions.length > 0) {
-			console.log("🚀 ~ OrderAdminService ~ findAll ~ dateConditions:", dateConditions);
 			whereOptions.created_at = { [Op.and]: dateConditions };
 		}
 
+		return whereOptions;
+	}
+
+	private async validateOrderExists(id: number): Promise<OrderModel> {
+		const order = await this.orderRp.findByPk(id);
+		if (!order) {
+			throw new NotFoundException("Đơn hàng không tồn tại!");
+		}
+		return order;
+	}
+
+	async findAll(dto: SearchOrderAdminDto) {
+		const whereOptions = this.buildSearchWhereConditions(dto);
+
 		const orders = await this.orderRp.findAndCountAll({
 			where: whereOptions,
-			include: [
-				{ model: OrderDetailModel, include: [{ model: ProductModel }] },
-				{ model: UserModel, attributes: ["name", "phone", "email", "role"] },
-			],
+			include: this.DEFAULT_INCLUDE,
 			distinct: true,
 			order: [["created_at", "DESC"]],
 			limit: dto.take,
 			offset: dto.skip,
 		});
 
-		return new PageDto(orders.rows, new PageMetaDto({ itemCount: orders.count, pageOptionsDto: dto }));
-	}
-
-	async findOne(id: number) {
-		const foundOrder = await this.orderRp.findOne({
-			where: { id: id },
-			include: [{ model: OrderDetailModel, include: [{ model: ProductModel }] }],
-		});
-
-		if (!foundOrder) {
-			throw new NotFoundException("Đơn hàng không tồn tại!");
-		}
-
-		return foundOrder;
-	}
-
-	async update(id: number, dto: UpdateOrderDto) {
-		let { order_status, pay_type } = dto;
-
-		const foundOrder = await this.orderRp.findOne({
-			where: { id: id },
-		});
-
-		if (order_status === OrderType.PAID) {
-			pay_type = PayTypes.PAID;
-		}
-
-		if (!foundOrder) {
-			throw new NotFoundException("Đơn hàng không tồn tại!");
-		}
-
-		await this.orderRp.update(
-			{
-				order_status: order_status,
-				pay_type: pay_type,
-			},
-			{
-				where: { id: id },
-			},
+		return new PageDto(
+			orders.rows, 
+			new PageMetaDto({ 
+				itemCount: orders.count, 
+				pageOptionsDto: dto 
+			})
 		);
 	}
 
-	async delete(id: number) {
-		const foundOrder = await this.orderRp.findOne({
-			where: { id: id },
+	async findOne(id: number) {
+		const order = await this.orderRp.findOne({
+			where: { id },
+			include: [{ 
+				model: OrderDetailModel, 
+				include: [{ model: ProductModel }] 
+			}],
 		});
 
-		if (!foundOrder) {
-			throw new NotFoundException("Không tồn tại đơn hàng!");
+		if (!order) {
+			throw new NotFoundException("Đơn hàng không tồn tại!");
 		}
 
-		await this.orderRp.destroy({
-			where: { id },
+		return order;
+	}
+
+	async update(id: number, dto: UpdateOrderDto) {
+		await this.validateOrderExists(id);
+		
+		const updateData = {
+			order_status: dto.order_status,
+			pay_type: dto.order_status === OrderType.PAID ? 
+					 PayTypes.PAID : 
+					 dto.pay_type
+		};
+
+		await this.orderRp.update(updateData, {
+			where: { id }
 		});
 	}
 
+	async delete(id: number) {
+		await this.validateOrderExists(id);
+		await this.orderRp.destroy({ where: { id } });
+	}
+
 	async cancelOrder(id: number) {
-		const foundOrder = await this.orderRp.findByPk(id);
-
-		if (!foundOrder) {
-			throw new NotFoundException("Không tồn tại đơn hàng!");
-		}
-
+		await this.validateOrderExists(id);
+		
 		await this.orderRp.update(
-			{
-				order_status: OrderType.CANCELED,
-			},
-			{
-				where: { id },
-			},
+			{ order_status: OrderType.CANCELED },
+			{ where: { id } }
 		);
 	}
 
 	async trigerWorkFlow(id: number) {
-		const foundOrder = await this.orderRp.findByPk(id);
+		const order = await this.validateOrderExists(id);
 		const maxStep = Number(OrderType.PAID);
-
-		if (!foundOrder) {
-			throw new NotFoundException("Không tồn tại đơn hàng!");
-		}
-
-		const newStatus = Number(foundOrder.order_status) + 1;
+		const newStatus = Number(order.order_status) + 1;
 
 		if (newStatus > maxStep) {
 			throw new BadRequestException("Đơn hàng đã hoàn thành!");
 		}
 
 		await this.orderRp.update(
-			{
-				order_status: newStatus,
-			},
-			{
-				where: { id },
-			},
+			{ order_status: newStatus },
+			{ where: { id } }
 		);
 
 		return newStatus;
@@ -171,6 +170,19 @@ export class OrderAdminService {
 		const workbook = new ExcelJS.Workbook();
 		const worksheet = workbook.addWorksheet("Báo cáo danh sách sản phẩm");
 
+		this.setupExcelWorksheet(worksheet);
+
+		await this.populateExcelData(worksheet, dto);
+
+		const fileName = this.generateExcelFileName();
+		const filePath = `${this.EXCEL_FILE_PATH}/${fileName}`;
+		const fileUrl = `${process.env.API_BASE_URL}/${filePath}`;
+
+		await workbook.xlsx.writeFile(filePath);
+		return fileUrl;
+	}
+
+	private setupExcelWorksheet(worksheet: ExcelJS.Worksheet) {
 		worksheet.columns = [
 			{ header: "STT", key: "index", width: 10 },
 			{ header: "Tên khách hàng", key: "name", width: 30 },
@@ -181,17 +193,18 @@ export class OrderAdminService {
 			{ header: "Địa chỉ", key: "address", width: 30 },
 		];
 
-		worksheet.getRow(1).font = {
-			bold: true,
-		};
+		worksheet.getRow(1).font = { bold: true };
+	}
 
+	private async populateExcelData(worksheet: ExcelJS.Worksheet, dto: SearchOrderAdminDto) {
 		let hasNextData = true;
 		let index = 1;
 
-		do {
+		while (hasNextData) {
 			const pagedOrders = await this.findAll(dto);
+			
 			pagedOrders.data.forEach(order => {
-				const row = {
+				worksheet.addRow({
 					index: index++,
 					name: order?.customer?.name,
 					phone: order?.customer?.phone,
@@ -199,21 +212,16 @@ export class OrderAdminService {
 					created: order?.created_at,
 					status: vldOrderStatus(order.order_status),
 					address: order?.address,
-				};
-				worksheet.addRow(row);
+				});
 			});
 
 			hasNextData = pagedOrders.data.length > 0;
 			dto.page++;
-		} while (hasNextData);
+		}
+	}
 
+	private generateExcelFileName(): string {
 		const currentDate = format(new Date(), "dd-MM-yyyy_HH-mm-ss");
-		const fileName = `DanhSachDonHang_${currentDate}.xlsx`;
-		const filePath = `uploads/excels/${fileName}`;
-		const fileUrl = `${process.env.API_BASE_URL}/${filePath}`;
-
-		await workbook.xlsx.writeFile(filePath);
-
-		return fileUrl;
+		return `DanhSachDonHang_${currentDate}.xlsx`;
 	}
 }
