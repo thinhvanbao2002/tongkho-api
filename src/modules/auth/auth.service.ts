@@ -4,7 +4,6 @@ import { InjectModel } from "@nestjs/sequelize";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { ChangePassworDto } from "./dto/change-password.dto";
-import { validateHash } from "src/common/helpers/hash.helper";
 import { UserStatus } from "../user/types/user.type";
 
 @Injectable()
@@ -17,6 +16,7 @@ export class AuthService {
 		const foundAmdin = await this.userRepository.findOne({
 			where: { phone: phone },
 		});
+
 		if (!foundAmdin) {
 			throw new NotFoundException("Tài khoản không tồn tại");
 		}

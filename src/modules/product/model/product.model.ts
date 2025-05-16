@@ -16,6 +16,7 @@ import { ProductPhotoModel } from "src/modules/product-photo/model/product-photo
 import { getFullUrl } from "src/common/helpers/ultils";
 import { ProductStatus } from "../constants/product.constant";
 import { ProductReviewModel } from "src/modules/product-review/model/product-review.model";
+import { WarehouseModel } from "src/modules/warehouse/model/warehouse.model";
 
 @Table({
 	tableName: "product",
@@ -38,14 +39,14 @@ export class ProductModel extends Model {
 		type: DataType.STRING,
 		allowNull: false,
 	})
-	name: string; // Tên sản phẩm bắt buộc
+	name: string;
 
 	@Column({
 		type: DataType.INTEGER,
 		allowNull: false,
 	})
 	@ForeignKey(() => CategoryModel)
-	category_id: number; // Mã danh mục bắt buộc
+	category_id: number;
 
 	@BelongsTo(() => CategoryModel)
 	category: CategoryModel;
@@ -54,19 +55,19 @@ export class ProductModel extends Model {
 		type: DataType.INTEGER,
 		allowNull: false,
 	})
-	price: number; // giá tiền bắt buộc
+	price: number;
 
 	@Column({
 		type: DataType.ENUM(...Object.values(ProductTypes)),
 		allowNull: false,
 	})
-	product_type: ProductTypes; // Loại hàng bt buộc
+	product_type: ProductTypes;
 
 	@Column({
 		type: DataType.BOOLEAN,
 		defaultValue: true,
 	})
-	availability: boolean; // tình trạng (còn hàng, hết hàng)
+	availability: boolean;
 
 	@Column({
 		type: DataType.INTEGER,
@@ -78,19 +79,19 @@ export class ProductModel extends Model {
 		type: DataType.INTEGER,
 		defaultValue: 0,
 	})
-	number_of_review: number; // Số lượng đánh giá
+	number_of_review: number;
 
 	@Column({
 		type: DataType.INTEGER,
 		defaultValue: 0,
 	})
-	quantity?: number; // Số lượng còn bắt buộc
+	quantity?: number;
 
 	@Column({
 		type: DataType.INTEGER,
 		defaultValue: 0,
 	})
-	sold: number; // Số lượng đã bán
+	sold: number;
 
 	@Column({
 		type: DataType.TEXT,
@@ -100,7 +101,13 @@ export class ProductModel extends Model {
 	@Column({
 		type: DataType.TEXT,
 	})
-	description: string; // Số lượng đã bán
+	description: string;
+
+	@Column({
+		type: DataType.INTEGER,
+	})
+	@ForeignKey(() => WarehouseModel)
+	warehouse_id: number;
 
 	@Column({
 		type: DataType.STRING,
