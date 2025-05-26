@@ -1,6 +1,6 @@
 import { Column, CreatedAt, DataType, DeletedAt, HasMany, Model, Table, UpdatedAt } from "sequelize-typescript";
-import { ProductPhotoModel } from "src/modules/product-photo/model/product-photo.model";
 import { ProductModel } from "src/modules/product/model/product.model";
+import { WarehouseStatus } from "../constants/warehouse.constant";
 
 @Table({
 	tableName: "warehouse",
@@ -11,7 +11,7 @@ export class WarehouseModel extends Model {
 		primaryKey: true,
 		autoIncrement: true,
 	})
-	id: string;
+	id: number;
 
 	@Column({
 		type: DataType.STRING,
@@ -27,9 +27,14 @@ export class WarehouseModel extends Model {
 
 	@Column({
 		type: DataType.INTEGER,
-		allowNull: false,
 	})
 	total_warehouse_area: number;
+
+	@Column({
+		type: DataType.INTEGER,
+		defaultValue: WarehouseStatus.ACTIVE,
+	})
+	status: WarehouseStatus;
 
 	@HasMany(() => ProductModel)
 	products: ProductModel[];

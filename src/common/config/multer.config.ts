@@ -5,10 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const storage = diskStorage({
 	destination: (req: any, file, callback) => {
-		callback(
-			null,
-			path.join("uploads", file.mimetype === "video/mp4" ? "video" : "image"),
-		);
+		callback(null, path.join("uploads", file.mimetype === "video/mp4" ? "video" : "image"));
 	},
 	filename: (req, file, cb) => {
 		const id = uuidv4().replace(/-/g, "");
@@ -19,17 +16,10 @@ const storage = diskStorage({
 const fileFilter = (req: any, file: any, cb: any) => {
 	if (file.mimetype === "video/mp4") {
 		cb(null, true);
-	} else if (
-		file.mimetype === "image/jpg" ||
-		file.mimetype === "image/jpeg" ||
-		file.mimetype === "image/png"
-	) {
+	} else if (file.mimetype === "image/jpg" || file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
 		cb(null, true);
 	} else {
-		cb(
-			new Error("File uploaded is not of type jpg/jpeg or png or video/mp4"),
-			false,
-		);
+		cb(new Error("File uploaded is not of type jpg/jpeg or png or video/mp4"), false);
 	}
 };
 

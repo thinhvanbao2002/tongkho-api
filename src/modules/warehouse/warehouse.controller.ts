@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from "@nestjs/common";
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from "@nestjs/common";
 import { WarehouseService } from "./warehouse.service";
 import { CreateWarehouseDto } from "./dto/create-warehouse.dto";
 import { UpdateWarehouseDto } from "./dto/update-warehouse.dto";
+import { SearchWarehouseDto } from "./dto/search-warehouse.dto";
+import { GenericController } from "src/common/decorators/controller.decorator";
 
-@Controller("warehouse")
+@GenericController("warehouse")
 export class WarehouseController {
 	constructor(private readonly warehouseService: WarehouseService) {}
 
@@ -13,8 +15,8 @@ export class WarehouseController {
 	}
 
 	@Get()
-	findAll() {
-		return this.warehouseService.findAll();
+	findAll(@Query() dto: SearchWarehouseDto) {
+		return this.warehouseService.findAll(dto);
 	}
 
 	@Get(":id")
