@@ -1,35 +1,39 @@
-import { IsArray, IsOptional } from "class-validator";
-import { NumberField, StringFieldOptional } from "src/common/decorators/field.decorator";
-import { ApiProperty } from "@nestjs/swagger";
-import { CreateOrderDetailDto } from "src/modules/order-detail/dto/create-order-detail.dto";
+import { IsArray, IsNotEmpty, IsNumber, IsString, ValidateNested, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { NumberField, StringField } from 'src/common/decorators/field.decorator';
 
-export class CreateOrderDto {
-	@StringFieldOptional()
-	name?: string;
-
-	@StringFieldOptional()
-	phone?: string;
-
-	@StringFieldOptional()
-	address?: string;
-
-	@StringFieldOptional()
-	note?: string;
+export class OrderItemDto {
+	@NumberField()
+	product_id: number;
 
 	@NumberField()
-	total_price: number;
+  total_price: number;
+  
+  @NumberField()
+  product_number: number
+}
 
-	@StringFieldOptional()
+export class CreateOrderDto {
+	@StringField()
+	name: string;
+
+	@StringField()
+	phone: string;
+
+	@StringField()
+	address: string;
+
+	@StringField()
 	city: string;
 
-	@StringFieldOptional()
+	@StringField()
 	district: string;
 
-	@StringFieldOptional()
+	@StringField()
 	ward: string;
 
 	@IsArray()
-	@ApiProperty()
-	@IsOptional()
-	items: CreateOrderDetailDto[];
+	@ValidateNested({ each: true })
+	@Type(() => OrderItemDto)
+	items: OrderItemDto[];
 }

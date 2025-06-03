@@ -17,6 +17,7 @@ import { getFullUrl } from "src/common/helpers/ultils";
 import { ProductStatus } from "../constants/product.constant";
 import { ProductReviewModel } from "src/modules/product-review/model/product-review.model";
 import { WarehouseModel } from "src/modules/warehouse/model/warehouse.model";
+import { ProductWarehouseModel } from "src/modules/product-warehouse/model/product-warehouse.model";
 
 @Table({
 	tableName: "product",
@@ -122,6 +123,9 @@ export class ProductModel extends Model {
 
 	@HasMany(() => ProductReviewModel)
 	product_reviews: ProductReviewModel[];
+
+	@HasMany(() => ProductWarehouseModel)
+	product_warehouses: ProductWarehouseModel[];
 
 	@CreatedAt
 	created_at: Date;

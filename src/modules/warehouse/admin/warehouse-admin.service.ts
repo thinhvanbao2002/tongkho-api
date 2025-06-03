@@ -9,6 +9,8 @@ import { Op } from "sequelize";
 import { PageDto } from "src/common/dto/page.dto";
 import { PageMetaDto } from "src/common/dto/page-meta.dto";
 import { Sequelize } from "sequelize-typescript";
+import { ProductModel } from "src/modules/product/model/product.model";
+import { ProductWarehouseModel } from "src/modules/product-warehouse/model/product-warehouse.model";
 
 const modelName = "warehouse";
 
@@ -16,17 +18,19 @@ const modelName = "warehouse";
 export class WarehouseAdminService {
     constructor(
         @InjectModel(WarehouseModel) private readonly warehouseRepository: typeof WarehouseModel,
+        @InjectModel(ProductModel) private readonly productRepository: typeof ProductModel,
+        @InjectModel(ProductWarehouseModel) private readonly productWarehouseRepository: typeof ProductWarehouseModel,
         private readonly sequelize: Sequelize,
     ) {}
 
     async create(createWarehouseDto: CreateWarehouseDto): Promise<WarehouseModel> {
-        const { warehouse_code, warehouse_name, total_warehouse_area } = createWarehouseDto;
+        const { warehouse_code, warehouse_name } = createWarehouseDto;
 
         const [result] = await this.sequelize.query(
-            `insert into ${modelName} (warehouse_code, warehouse_name, total_warehouse_area, created_at, updated_at) 
-            values (:warehouse_code, :warehouse_name, :total_warehouse_area, NOW(), NOW())`,
+            `insert into ${modelName} (warehouse_code, warehouse_name, created_at, updated_at) 
+            values (:warehouse_code, :warehouse_name, NOW(), NOW())`,
             {
-                replacements: { warehouse_code, warehouse_name, total_warehouse_area },
+                replacements: { warehouse_code, warehouse_name },
                 type: QueryTypes.INSERT,
             },
         );
@@ -37,13 +41,6 @@ export class WarehouseAdminService {
         const { q, status, from_date, to_date, take, skip } = dto;
         const whereOptions: WhereOptions = {};
         const dateConditions = [];
-
-        // if (q) {
-        //     whereOptions[Op.or] = [
-        //         { warehouse_code: { [Op.like]: `%${q}%` } },
-        //         { warehouse_name: { [Op.like]: `%${q}%` } }
-        //     ] as unknown as WhereOptions;
-        // }
 
         if (status) {
             whereOptions.status = { [Op.eq]: status };
@@ -63,12 +60,51 @@ export class WarehouseAdminService {
 
         const warehouses = await this.warehouseRepository.findAndCountAll({
             where: whereOptions,
+            include: [
+                {
+                    model: ProductWarehouseModel,
+                    include: [
+                        {
+                            model: ProductModel,
+                            attributes: [
+                                'id',
+                                'product_code',
+                                'name',
+                                'image',
+                                'price',
+                                'quantity',
+                                'status'
+                            ],
+                        }
+                    ],
+                    attributes: ['quantity'],
+                }
+            ],
             order: [["created_at", "DESC"]],
             limit: take,
             offset: skip,
         });
 
-        return new PageDto(warehouses.rows, new PageMetaDto({ itemCount: warehouses.count, pageOptionsDto: dto }));
+        // Transform the data to include inventory summary
+        const transformedWarehouses = warehouses.rows.map(warehouse => {
+            const warehouseData = warehouse.toJSON();
+            const inventory = warehouseData.product_warehouses.map(pw => ({
+                product: pw.product,
+                quantity: pw.quantity
+            }));
+
+            return {
+                ...warehouseData,
+                inventory,
+                total_products: inventory.length,
+                total_quantity: inventory.reduce((sum, item) => sum + item.quantity, 0)
+            };
+        });
+
+        return new PageDto(
+            transformedWarehouses,
+            new PageMetaDto({ itemCount: warehouses.count, pageOptionsDto: dto })
+        );
     }
 
     async findOne(id: number) {

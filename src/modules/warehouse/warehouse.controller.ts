@@ -4,6 +4,8 @@ import { CreateWarehouseDto } from "./dto/create-warehouse.dto";
 import { UpdateWarehouseDto } from "./dto/update-warehouse.dto";
 import { SearchWarehouseDto } from "./dto/search-warehouse.dto";
 import { GenericController } from "src/common/decorators/controller.decorator";
+import { ImportProductDto } from "./dto/import-product.dto";
+import { SearchImportDto } from "./dto/search-import.dto";
 
 @GenericController("warehouse")
 export class WarehouseController {
@@ -32,5 +34,15 @@ export class WarehouseController {
 	@Delete(":id")
 	remove(@Param("id") id: string) {
 		return this.warehouseService.remove(+id);
+	}
+
+	@Post("import")
+	importProducts(@Body() dto: ImportProductDto) {
+		return this.warehouseService.importProducts(dto);
+	}
+
+	@Get("import/history")
+	getImportHistory(@Query() dto: SearchImportDto) {
+		return this.warehouseService.getImportHistory(dto);
 	}
 }

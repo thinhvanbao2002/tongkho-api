@@ -11,11 +11,13 @@ export class WarehouseAdminController {
 
     @Get()
     async findAll(@Query() dto: SearchWarehouseDto) {
+        console.log("🚀 ~ WarehouseAdminController ~ findAll ~ dto:", dto)
         return await this.warehouseService.findAll(dto);
     }
 
     @Post()
     async create(@Body() createWarehouseDto: CreateWarehouseDto) {
+        console.log("🚀 ~ WarehouseAdminController ~ create ~ createWarehouseDto:", createWarehouseDto)
         return await this.warehouseService.create(createWarehouseDto);
     }
 

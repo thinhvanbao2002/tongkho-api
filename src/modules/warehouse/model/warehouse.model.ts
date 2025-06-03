@@ -1,6 +1,7 @@
 import { Column, CreatedAt, DataType, DeletedAt, HasMany, Model, Table, UpdatedAt } from "sequelize-typescript";
 import { ProductModel } from "src/modules/product/model/product.model";
 import { WarehouseStatus } from "../constants/warehouse.constant";
+import { ProductWarehouseModel } from "src/modules/product-warehouse/model/product-warehouse.model";
 
 @Table({
 	tableName: "warehouse",
@@ -38,6 +39,9 @@ export class WarehouseModel extends Model {
 
 	@HasMany(() => ProductModel)
 	products: ProductModel[];
+
+	@HasMany(() => ProductWarehouseModel)
+	product_warehouses: ProductWarehouseModel[];
 
 	@CreatedAt
 	created_at: Date;

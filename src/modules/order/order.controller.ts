@@ -17,7 +17,7 @@ export class OrderController {
 	@Roles(UserRoles.CUSTOMER, UserRoles.ADMIN)
 	@UseGuards(JwtAuthGuard, RolesGuard)
 	async create(@Body() createOrderDto: CreateOrderDto, @Request() req) {
-		return await this.orderService.create(createOrderDto, req);
+		return await this.orderService.create(createOrderDto);
 	}
 
 	@Get()

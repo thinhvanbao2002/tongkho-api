@@ -25,6 +25,7 @@ import { TransactionModule } from "./modules/transaction/transaction.module";
 import { BlogModule } from "./modules/blog/blog.module";
 import { ProductReviewModule } from "./modules/product-review/product-review.module";
 import { WarehouseModule } from "./modules/warehouse/warehouse.module";
+import { ProductWarehouseModule } from "./modules/product-warehouse/product-warehouse.module";
 
 @Module({
 	imports: [
@@ -72,6 +73,7 @@ import { WarehouseModule } from "./modules/warehouse/warehouse.module";
 		BlogModule,
 		ProductReviewModule,
 		WarehouseModule,
+		ProductWarehouseModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
