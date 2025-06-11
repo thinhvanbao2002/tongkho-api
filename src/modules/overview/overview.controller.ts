@@ -3,6 +3,7 @@ import { OverviewService } from "./overview.service";
 import { CreateOverviewDto } from "./dto/create-overview.dto";
 import { UpdateOverviewDto } from "./dto/update-overview.dto";
 import { GetRevenueByMonthDto } from "./dto/get-revenue-by-month.dto";
+import { GetTopProductDto } from "./dto/get-top-product.dto";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { UserRoles } from "../user/types/user.type";
 import { JwtAuthGuard } from "../auth/guards/jwt.guard";
@@ -47,5 +48,10 @@ export class OverviewController {
 	@Get("/month/revenue")
 	async getRevenueByMonth(@Query() dto: GetRevenueByMonthDto) {
 		return await this.overviewService.getDailyRevenueByMonth(dto);
+	}
+
+	@Get("/products/top")
+	async getTopProducts(@Query() dto: GetTopProductDto) {
+		return await this.overviewService.getTopProducts(dto);
 	}
 }

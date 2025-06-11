@@ -11,6 +11,9 @@ import { UserModel } from "../user/model/user.model";
 import { ProductModel } from "../product/model/product.model";
 import { CategoryModel } from "../category/model/category.model";
 import { UserRoles } from "../user/types/user.type";
+import { OrderDetailModel } from "../order-detail/model/order-detail.model";
+import { GetTopProductDto } from "./dto/get-top-product.dto";
+import { QueryTypes } from "sequelize";
 
 @Injectable()
 export class OverviewService {
@@ -19,6 +22,8 @@ export class OverviewService {
 		@InjectModel(UserModel) private readonly userRepository: typeof UserModel,
 		@InjectModel(ProductModel) private readonly productRepository: typeof ProductModel,
 		@InjectModel(CategoryModel) private readonly categoryRepository: typeof CategoryModel,
+		@InjectModel(OrderDetailModel) private readonly orderDetailRepository: typeof OrderDetailModel,
+		private readonly sequelize: Sequelize,
 	) {}
 	create(createOverviewDto: CreateOverviewDto) {
 		return "This action adds a new overview";
@@ -142,5 +147,31 @@ export class OverviewService {
 					"",
 				) + tmpType
 		}`;
+	}
+
+	async getTopProducts(dto: GetTopProductDto) {
+		const currentDate = new Date();
+		const { year = currentDate.getFullYear(), month = currentDate.getMonth() + 1, limit = 10 } = dto;
+		const replacements: any = { limit, month, year };
+
+		const query = 'SELECT p.id, p.name, p.product_code, p.price, p.image, ' +
+			'COUNT(od.id) AS total_quantity, ' +
+			'SUM(o.total_price) AS total_revenue ' +
+			'FROM order_detail od ' +
+			'JOIN `order` o ON od.order_id = o.id ' +
+			'JOIN product p ON od.product_id = p.id ' +
+			'WHERE o.order_status = \'4\' ' +
+			'AND MONTH(o.created_at) = :month ' +
+			'AND YEAR(o.created_at) = :year ' +
+			'GROUP BY p.id, p.name, p.product_code, p.price, p.image ' +
+			'ORDER BY total_revenue DESC ' +
+			'LIMIT :limit';
+
+		const topProducts = await this.sequelize.query(query, {
+			replacements,
+			type: QueryTypes.SELECT,
+		});
+
+		return topProducts;
 	}
 }

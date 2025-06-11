@@ -53,7 +53,7 @@ export class OrderService {
 
 			orderItems.push({
 				product_id: item.product_id,
-				quantity: item.product_number,
+				product_number: item.product_number,
 				price: item.total_price,
 				total_price: item.total_price * item.product_number
 			});
@@ -74,7 +74,7 @@ export class OrderService {
 					this.orderDetailRepository.create({
 						order_id: order.id,
 						product_id: item.product_id,
-						quantity: item.product_number,
+						product_number: item.product_number,
 						price: item.price,
 						total_price: item.total_price
 					}, { transaction })

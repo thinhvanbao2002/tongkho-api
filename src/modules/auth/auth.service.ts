@@ -28,7 +28,7 @@ export class AuthService {
 		const checkPass = bcrypt.compareSync(password, foundAmdin.password);
 
 		if (checkPass === false) {
-			throw new UnauthorizedException("Sai taì khoản hoặc mật khẩu!");
+			throw new UnauthorizedException("Sai tài khoản hoặc mật khẩu!");
 		}
 
 		const payload = {
