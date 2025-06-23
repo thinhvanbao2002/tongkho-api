@@ -11,6 +11,7 @@ import {
 } from "sequelize-typescript";
 import { ProductModel } from "src/modules/product/model/product.model";
 import { WarehouseModel } from "./warehouse.model";
+import { SupplierModel } from "src/modules/supplier/model/supplier.model";
 
 @Table({
     tableName: "warehouse_import_history",
@@ -42,6 +43,16 @@ export class WarehouseImportHistoryModel extends Model {
 
     @BelongsTo(() => WarehouseModel)
     warehouse: WarehouseModel;
+
+    @Column({
+        type: DataType.INTEGER,
+        allowNull: true,
+    })
+    @ForeignKey(() => SupplierModel)
+    supplier_id: number;
+
+    @BelongsTo(() => SupplierModel)
+    supplier: SupplierModel;
 
     @Column({
         type: DataType.INTEGER,

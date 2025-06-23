@@ -13,6 +13,7 @@ import { ProductModel } from "src/modules/product/model/product.model";
 import { ProductWarehouseModel } from "src/modules/product-warehouse/model/product-warehouse.model";
 import { SearchImportDto } from "./dto/search-import.dto";
 import { WarehouseImportHistoryModel } from "./model/warehouse-import-history.model";
+import { SupplierModel } from "src/modules/supplier/model/supplier.model";
 
 interface OrderItem {
 	product_id: number;
@@ -26,6 +27,7 @@ export class WarehouseService {
 		@InjectModel(ProductModel) private readonly productRepository: typeof ProductModel,
 		@InjectModel(ProductWarehouseModel) private readonly productWarehouseRepository: typeof ProductWarehouseModel,
 		@InjectModel(WarehouseImportHistoryModel) private readonly importHistoryRepository: typeof WarehouseImportHistoryModel,
+		@InjectModel(SupplierModel) private readonly supplierRepository: typeof SupplierModel,
 	) {}
 
 	async create(createWarehouseDto: CreateWarehouseDto): Promise<WarehouseModel> {
@@ -110,7 +112,7 @@ export class WarehouseService {
 	}
 
 	async importProducts(dto: ImportProductDto) {
-		const { warehouse_id, products, staff_name, staff_id, import_date } = dto;
+		const { warehouse_id, products, staff_name, staff_id, import_date, supplier_id } = dto;
 
 		// Check if warehouse exists
 		const warehouse = await this.warehouseRepository.findOne({
@@ -119,6 +121,14 @@ export class WarehouseService {
 
 		if (!warehouse) {
 			throw new NotFoundException("Không tìm thấy kho");
+		}
+		
+		// Check if supplier exists if provided
+		if (supplier_id) {
+			const supplier = await this.supplierRepository.findByPk(supplier_id);
+			if (!supplier) {
+				throw new NotFoundException(`Không tìm thấy nhà cung cấp với ID: ${supplier_id}`);
+			}
 		}
 
 		// Process imports within a transaction
@@ -169,6 +179,7 @@ export class WarehouseService {
 					staff_id,
 					import_date,
 					note,
+					supplier_id,
 				}, { transaction });
 
 				importResults.push({
@@ -187,7 +198,7 @@ export class WarehouseService {
 	}
 
 	async getImportHistory(dto: SearchImportDto) {
-		const { warehouse_id, staff_name, from_date, to_date, take, skip } = dto;
+		const { warehouse_id, staff_name, from_date, to_date, take, skip, supplier_id } = dto;
 		const whereOptions: WhereOptions = {};
 		const dateConditions = [];
 
@@ -197,6 +208,10 @@ export class WarehouseService {
 
 		if (staff_name) {
 			whereOptions.staff_name = { [Op.like]: `%${staff_name}%` };
+		}
+
+		if(supplier_id) {
+			whereOptions.supplier_id = { [Op.eq]: supplier_id };
 		}
 
 		if (from_date) {
@@ -221,6 +236,10 @@ export class WarehouseService {
 				{
 					model: WarehouseModel,
 					attributes: ['id', 'warehouse_code', 'warehouse_name'],
+				},
+				{
+					model: SupplierModel,
+					attributes: ['id', 'supplier_code', 'supplier_name'],
 				}
 			],
 			order: [["import_date", "DESC"]],

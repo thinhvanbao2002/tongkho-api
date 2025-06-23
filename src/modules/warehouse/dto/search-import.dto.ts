@@ -8,6 +8,9 @@ export class SearchImportDto extends PageOptionsDto {
     @StringFieldOptional()
     staff_name?: string;
 
+    @NumberFieldOptional()
+    supplier_id?: number;
+
     @DateFieldOptional()
     from_date?: Date;
 

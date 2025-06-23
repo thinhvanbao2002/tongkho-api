@@ -1,4 +1,4 @@
-import { StringField, NumberField, DateField } from "src/common/decorators/field.decorator";
+import { StringField, NumberField, DateField, NumberFieldOptional } from "src/common/decorators/field.decorator";
 import { Type } from "class-transformer";
 import { ValidateNested, IsArray } from "class-validator";
 
@@ -33,4 +33,7 @@ export class ImportProductDto {
     @ValidateNested({ each: true })
     @Type(() => ImportProductItemDto)
     products: ImportProductItemDto[];
+
+    @NumberFieldOptional()
+    supplier_id?: number;
 } 

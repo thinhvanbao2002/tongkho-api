@@ -8,6 +8,7 @@ import { WarehouseAdminService } from "./admin/warehouse-admin.service";
 import { ProductModel } from "src/modules/product/model/product.model";
 import { ProductWarehouseModel } from "src/modules/product-warehouse/model/product-warehouse.model";
 import { WarehouseImportHistoryModel } from "./model/warehouse-import-history.model";
+import { SupplierModel } from "src/modules/supplier/model/supplier.model";
 
 @Module({
 	imports: [
@@ -15,7 +16,8 @@ import { WarehouseImportHistoryModel } from "./model/warehouse-import-history.mo
 			WarehouseModel,
 			ProductModel,
 			ProductWarehouseModel,
-			WarehouseImportHistoryModel
+			WarehouseImportHistoryModel,
+			SupplierModel,
 		])
 	],
 	controllers: [WarehouseController, WarehouseAdminController],
