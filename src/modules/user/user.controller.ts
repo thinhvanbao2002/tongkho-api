@@ -20,7 +20,7 @@ export class UserController {
 	}
 
 	@Get()
-	@Roles(UserRoles.CUSTOMER, UserRoles.ADMIN)
+	@Roles(UserRoles.CUSTOMER, UserRoles.ADMIN, UserRoles.STAFF)
 	@UseGuards(JwtAuthGuard, RolesGuard)
 	async getUserInfo(@Request() req) {
 		return await this.userService.getUserInfo(req);

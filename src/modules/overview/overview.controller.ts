@@ -19,7 +19,7 @@ export class OverviewController {
 	}
 
 	@Get()
-	@Roles(UserRoles.ADMIN)
+	@Roles(UserRoles.ADMIN,UserRoles.STAFF)
 	@UseGuards(JwtAuthGuard, RolesGuard)
 	async findDataWebShop() {
 		return await this.overviewService.findAll();

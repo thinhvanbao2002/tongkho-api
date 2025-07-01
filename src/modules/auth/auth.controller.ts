@@ -1,4 +1,4 @@
-import { Post, Body, Request, UseGuards } from "@nestjs/common";
+import { Post, Body, Request, UseGuards, Get } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthPayloadDto } from "./dto/auth.dto";
 import { GenericController } from "src/common/decorators/controller.decorator";
@@ -7,10 +7,11 @@ import { UserRoles } from "../user/types/user.type";
 import { Roles } from "./decorators/roles.decorator";
 import { JwtAuthGuard } from "./guards/jwt.guard";
 import { RolesGuard } from "./guards/roles.guard";
+import { UserService } from "../user/user.service";
 
 @GenericController("auth")
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+	constructor(private readonly authService: AuthService, private readonly userService: UserService) {}
 
 	@Post("login")
 	async create(@Body() authPayload: AuthPayloadDto) {
@@ -23,5 +24,12 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard, RolesGuard)
 	async changePassword(@Body() dto: ChangePassworDto, @Request() req) {
 		return await this.authService.changePassword(dto, req);
+	}
+
+	@Get("getUserInfo")
+	@Roles(UserRoles.CUSTOMER, UserRoles.STAFF, UserRoles.ADMIN)
+	@UseGuards(JwtAuthGuard, RolesGuard)
+	async getUserInfo(@Request() req) {
+		return await this.userService.getUserInfo(req);
 	}
 }
