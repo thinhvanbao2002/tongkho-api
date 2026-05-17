@@ -155,8 +155,8 @@ export class OverviewService {
 		const replacements: any = { limit, month, year };
 
 		const query = 'SELECT p.id, p.name, p.product_code, p.price, p.image, ' +
-			'COUNT(od.id) AS total_quantity, ' +
-			'SUM(o.total_price) AS total_revenue ' +
+			'SUM(od.product_number) AS total_quantity, ' +
+			'SUM(od.price * od.product_number) AS total_revenue ' +
 			'FROM order_detail od ' +
 			'JOIN `order` o ON od.order_id = o.id ' +
 			'JOIN product p ON od.product_id = p.id ' +

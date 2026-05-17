@@ -39,4 +39,7 @@ export class UpdateProductDto {
 
 	@StringField()
 	image: string;
+
+	@NumberFieldOptional()
+	supplier_id?: number;
 }

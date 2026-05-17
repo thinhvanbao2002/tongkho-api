@@ -18,6 +18,7 @@ import { ProductStatus } from "../constants/product.constant";
 import { ProductReviewModel } from "src/modules/product-review/model/product-review.model";
 import { WarehouseModel } from "src/modules/warehouse/model/warehouse.model";
 import { ProductWarehouseModel } from "src/modules/product-warehouse/model/product-warehouse.model";
+import { SupplierModel } from "src/modules/supplier/model/supplier.model";
 
 @Table({
 	tableName: "product",
@@ -109,6 +110,15 @@ export class ProductModel extends Model {
 	})
 	@ForeignKey(() => WarehouseModel)
 	warehouse_id: number;
+
+	@Column({
+		type: DataType.INTEGER,
+	})
+	@ForeignKey(() => SupplierModel)
+	supplier_id: number;
+
+	@BelongsTo(() => SupplierModel)
+	supplier: SupplierModel;
 
 	@Column({
 		type: DataType.STRING,

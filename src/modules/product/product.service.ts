@@ -10,6 +10,7 @@ import { PageMetaDto } from "src/common/dto/page-meta.dto";
 import { PageDto } from "src/common/dto/page.dto";
 import { ProductReviewModel } from "../product-review/model/product-review.model";
 import { UserModel } from "../user/model/user.model";
+import { SupplierModel } from "../supplier/model/supplier.model";
 
 @Injectable()
 export class ProductService {
@@ -17,7 +18,7 @@ export class ProductService {
 		@InjectModel(ProductModel) private readonly productRepository: typeof ProductModel,
 		@InjectModel(ProductPhotoModel) private productPhotoModel: typeof ProductModel,
 		@InjectModel(CategoryModel) private categoryRepository: typeof CategoryModel,
-	) {}
+	) { }
 
 	async findAll(dto: SearchProductDto) {
 		const { product_type, q, status, from_date, to_date, brand, price_range } = dto;
@@ -62,7 +63,7 @@ export class ProductService {
 
 		const products = await this.productRepository.findAndCountAll({
 			where: whereOptions,
-			include: [{ model: CategoryModel }],
+			include: [{ model: CategoryModel }, { model: SupplierModel }],
 			order: [["created_at", "DESC"]],
 			limit: dto.take,
 			offset: dto.skip,
@@ -77,6 +78,7 @@ export class ProductService {
 			include: [
 				{ model: ProductPhotoModel },
 				{ model: CategoryModel },
+				{ model: SupplierModel },
 				{ model: ProductReviewModel, include: [{ model: UserModel }] },
 			],
 		});

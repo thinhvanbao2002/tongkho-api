@@ -24,7 +24,7 @@ export class OrderService {
 		private readonly warehouseService: WarehouseService,
 	) {}
 
-	async create(createOrderDto: CreateOrderDto) {
+	async create(createOrderDto: CreateOrderDto, customerId: number) {
 		const { items, ...orderData } = createOrderDto;
 		console.log("🚀 ~ OrderService ~ create ~ createOrderDto:", createOrderDto)
 
@@ -64,7 +64,8 @@ export class OrderService {
 			// Create order
 			const order = await this.orderRepository.create({
 				...orderData,
-				status: 'PENDING',
+				customer_id: customerId,
+				order_status: OrderType.PENDING,
 				total_price: items.reduce((sum, item) => sum + (item.total_price * item.product_number), 0)
 			}, { transaction });
 

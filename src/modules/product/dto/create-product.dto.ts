@@ -39,4 +39,7 @@ export class CreateProductDto {
 
 	@StringFieldOptional()
 	introduce: string;
+
+	@NumberFieldOptional()
+	supplier_id?: number;
 }

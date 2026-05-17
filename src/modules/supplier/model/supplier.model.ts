@@ -6,7 +6,9 @@ import {
 	Model,
 	Table,
 	UpdatedAt,
+	HasMany
 } from "sequelize-typescript";
+import { ProductModel } from "src/modules/product/model/product.model";
 
 @Table({
 	tableName: "suppliers",
@@ -41,6 +43,9 @@ export class SupplierModel extends Model {
 		type: DataType.STRING,
 	})
 	email: string;
+
+	@HasMany(() => ProductModel)
+	products: ProductModel[];
 
 	@CreatedAt
 	created_at: Date;

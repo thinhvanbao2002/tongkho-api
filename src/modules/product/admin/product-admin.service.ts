@@ -14,6 +14,7 @@ import { ImportProductDto } from "../dto/import-product.dto";
 import * as ExcelJS from "exceljs";
 import { format } from "date-fns";
 import { convertStatus } from "src/common/helpers/ultils";
+import { SupplierModel } from "src/modules/supplier/model/supplier.model";
 
 @Injectable()
 export class ProductAdminService {
@@ -32,7 +33,7 @@ export class ProductAdminService {
 	}
 
 	async create(createProductDto: CreateProductDto) {
-		const { name, category_id, price, product_type, quantity, product_photo, description, image, introduce } =
+		const { name, category_id, price, product_type, quantity, product_photo, description, image, introduce, supplier_id } =
 			createProductDto;
 
 		const foundCategory = await this.categoryRepository.findOne({
@@ -55,6 +56,7 @@ export class ProductAdminService {
 					description,
 					image,
 					introduce,
+					supplier_id,
 				},
 				{ transaction },
 			);
@@ -124,7 +126,7 @@ export class ProductAdminService {
 
 		const products = await this.productRepository.findAndCountAll({
 			where: whereOptions,
-			include: [{ model: CategoryModel }, { model: ProductPhotoModel }],
+			include: [{ model: CategoryModel }, { model: ProductPhotoModel }, { model: SupplierModel }],
 			order: orderConditions,
 			distinct: true,
 			limit: dto.take,
