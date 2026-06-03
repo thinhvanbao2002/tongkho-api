@@ -1,5 +1,6 @@
 import {
 	EnumField,
+	EnumFieldOptional,
 	NumberField,
 	NumberFieldOptional,
 	StringField,
@@ -20,8 +21,8 @@ export class CreateProductDto {
 	@NumberField()
 	price: number;
 
-	@EnumField(() => ProductTypes)
-	product_type: ProductTypes;
+	@EnumFieldOptional(() => ProductTypes)
+	product_type?: ProductTypes;
 
 	@NumberFieldOptional()
 	quantity?: number;

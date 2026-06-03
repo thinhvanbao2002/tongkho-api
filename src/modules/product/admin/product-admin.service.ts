@@ -15,6 +15,7 @@ import * as ExcelJS from "exceljs";
 import { format } from "date-fns";
 import { convertStatus } from "src/common/helpers/ultils";
 import { SupplierModel } from "src/modules/supplier/model/supplier.model";
+import { ProductTypes } from "../types/product.type";
 
 @Injectable()
 export class ProductAdminService {
@@ -51,7 +52,7 @@ export class ProductAdminService {
 					name,
 					category_id,
 					price,
-					product_type,
+					product_type: ProductTypes.NEW_PRODUCT,
 					quantity,
 					description,
 					image,
